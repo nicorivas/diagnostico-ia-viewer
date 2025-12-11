@@ -1,6 +1,6 @@
 const DATA = {
   "metadata": {
-    "generado": "2025-12-11 00:48",
+    "generado": "2025-12-11 00:59",
     "total": 19,
     "indice_ia2_general": 1.8
   },
@@ -1110,7 +1110,7 @@ const DATA = {
     },
     {
       "id": "06",
-      "nombre": "Repositorio Mínimo de Prompts y Playbooks (con dueños)",
+      "nombre": "Repositorio Mínimo de Prompts y Playbooks",
       "tipo": "Quick Win",
       "area": "PIA",
       "esfuerzo": "Bajo",
@@ -1335,7 +1335,7 @@ const DATA = {
     },
     {
       "id": "07",
-      "nombre": "\"Leader as Teacher\" – Piloto (2-3 líderes, casos reales)",
+      "nombre": "Leader as Teacher",
       "tipo": "Quick Win",
       "area": "Cultura / PIA",
       "esfuerzo": "Bajo",
@@ -1557,7 +1557,7 @@ const DATA = {
     },
     {
       "id": "08",
-      "nombre": "Copiloto de Propuestas Comerciales [Upskill/Brinca]",
+      "nombre": "Copiloto de Propuestas Comerciales",
       "tipo": "Quick Win",
       "area": "Comercial [Upskill/Brinca]",
       "esfuerzo": "Bajo",
@@ -1760,7 +1760,7 @@ const DATA = {
     },
     {
       "id": "09",
-      "nombre": "Revisión de Licitaciones y Oportunidades (detección temprana) [GT]",
+      "nombre": "Revisión de Licitaciones y Oportunidades",
       "tipo": "Proyecto",
       "area": "Gestión Tecnológica",
       "esfuerzo": "Medio",
@@ -2181,7 +2181,7 @@ const DATA = {
     },
     {
       "id": "11",
-      "nombre": "Evaluación de Entregables según Mejores Prácticas [EIC/PIA]",
+      "nombre": "Evaluación de Entregables según Mejores Prácticas",
       "tipo": "Quick Win",
       "area": "EIC / PIA",
       "esfuerzo": "Bajo",
@@ -2395,7 +2395,7 @@ const DATA = {
     },
     {
       "id": "12",
-      "nombre": "Piloto Buscador Inteligente de Instrumentos y Casos Análogos [GT]",
+      "nombre": "Piloto Buscador Inteligente de Instrumentos y Casos Análogos",
       "tipo": "Proyecto",
       "area": "Gestión Tecnológica",
       "esfuerzo": "Medio",
@@ -2618,7 +2618,7 @@ const DATA = {
     },
     {
       "id": "13",
-      "nombre": "Cierre Integral de Curso (docs, diplomas, encuestas) [Upskill]",
+      "nombre": "Cierre Integral de Curso (docs, diplomas, encuestas)",
       "tipo": "Proyecto",
       "area": "Operaciones (Upskill)",
       "esfuerzo": "Medio",
@@ -2838,7 +2838,7 @@ const DATA = {
     },
     {
       "id": "14",
-      "nombre": "Metodología de Desarrollo de Proyectos IA (idea→POC→piloto→producción)",
+      "nombre": "Metodología de Desarrollo de Proyectos IA",
       "tipo": "Proyecto",
       "area": "PIA / Innovación",
       "esfuerzo": "Medio",
@@ -3276,7 +3276,7 @@ const DATA = {
     },
     {
       "id": "16",
-      "nombre": "Sistema de Evaluación (Evals) y Umbrales de Calidad para Outputs IA",
+      "nombre": "Sistema de Evaluación (Evals) y Calidad para Outputs IA",
       "tipo": "Proyecto",
       "area": "Transversal (PIA)",
       "esfuerzo": "Medio-Alto",
@@ -3501,7 +3501,7 @@ const DATA = {
     },
     {
       "id": "17",
-      "nombre": "Tracking y SLA de Cierre SENCE [Upskill]",
+      "nombre": "Tracking y SLA de Cierre SENCE",
       "tipo": "Proyecto",
       "area": "Upskill",
       "esfuerzo": "Medio",
@@ -3995,7 +3995,7 @@ const DATA = {
     },
     {
       "id": "19",
-      "nombre": "Automatización C3 con Auto-QA y Medición Mensual [PIA / EIC]",
+      "nombre": "Automatización C3 con Auto-QA y Medición Mensual",
       "tipo": "Épica",
       "area": "Operaciones (PIA/EIC/Sostenibilidad)",
       "esfuerzo": "Alto",
