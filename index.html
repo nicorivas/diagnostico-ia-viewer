@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oportunidades IA - Diagnóstico Brinca</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <style>
+        :root {
+            --quick-win: #10B981;
+            --proyecto: #3B82F6;
+            --epica: #8B5CF6;
+            --pico-font-size: 14px;
+        }
+
+        /* Reducir tamaños globales */
+        body {
+            font-size: 0.875rem;
+        }
+
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1.25rem; }
+        h3 { font-size: 1.1rem; }
+        h4 { font-size: 1rem; }
+        p, li { font-size: 0.875rem; line-height: 1.5; }
+        small { font-size: 0.75rem; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--pico-card-background-color);
+            border-radius: var(--pico-border-radius);
+        }
+
+        .stat-card h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .stat-card small {
+            color: var(--pico-muted-color);
+            font-size: 0.7rem;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+
+        .filters select {
+            width: auto;
+            min-width: 150px;
+        }
+
+        .filter-badges {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-badge {
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            font-weight: 600;
+        }
+
+        .filter-badge.quick-win {
+            background: var(--quick-win);
+            color: white;
+        }
+        .filter-badge.quick-win.inactive {
+            background: transparent;
+            border-color: var(--quick-win);
+            color: var(--quick-win);
+            opacity: 0.6;
+        }
+
+        .filter-badge.proyecto {
+            background: var(--proyecto);
+            color: white;
+        }
+        .filter-badge.proyecto.inactive {
+            background: transparent;
+            border-color: var(--proyecto);
+            color: var(--proyecto);
+            opacity: 0.6;
+        }
+
+        .filter-badge.epica {
+            background: var(--epica);
+            color: white;
+        }
+        .filter-badge.epica.inactive {
+            background: transparent;
+            border-color: var(--epica);
+            color: var(--epica);
+            opacity: 0.6;
+        }
+
+        .filter-badge:hover {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .oportunidad-card {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 4px solid var(--pico-muted-border-color);
+        }
+
+        .oportunidad-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .oportunidad-card.quick-win { border-left-color: var(--quick-win); }
+        .oportunidad-card.proyecto { border-left-color: var(--proyecto); }
+        .oportunidad-card.epica { border-left-color: var(--epica); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--pico-muted-border-color);
+            color: var(--pico-muted-color);
+            font-size: 0.6rem;
+            font-weight: 500;
+            opacity: 0.6;
+        }
+
+        .tipo-badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 1rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        .tipo-badge.quick-win { background: var(--quick-win); }
+        .tipo-badge.proyecto { background: var(--proyecto); }
+        .tipo-badge.epica { background: var(--epica); }
+
+        .card-meta {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--pico-muted-color);
+            margin-top: 0.4rem;
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            position: relative;
+            text-decoration: none !important;
+            border-bottom: none !important;
+        }
+
+        .meta-item[data-tooltip] {
+            cursor: default;
+        }
+
+        .meta-item svg {
+            width: 11px;
+            height: 11px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .meta-item[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--pico-contrast);
+            color: var(--pico-contrast-inverse);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            z-index: 100;
+            margin-bottom: 4px;
+        }
+
+        .meta-item[data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: var(--pico-contrast);
+            z-index: 100;
+        }
+
+        .ia2-preview {
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+        }
+
+        .ia2-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .oportunidad-card article,
+        article.oportunidad-card {
+            padding: 0.75rem 1rem;
+        }
+
+        /* Modal styles */
+        dialog {
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        dialog article {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+        }
+
+        dialog article > header {
+            position: sticky;
+            top: 0;
+            background: var(--pico-card-background-color);
+            z-index: 10;
+            padding: 2rem 2.5rem 1.5rem;
+            flex-shrink: 0;
+        }
+
+        dialog article > header h2 {
+            margin-bottom: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        dialog article > header .card-meta {
+            margin-top: 1rem;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem 2.5rem 3rem;
+        }
+
+        .modal-body hr {
+            display: none;
+        }
+
+        .kpi-item {
+            border-left: 3px solid var(--proyecto);
+        }
+
+        dialog article > footer {
+            position: sticky;
+            bottom: 0;
+            background: var(--pico-card-background-color);
+            padding: 1.25rem 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .modal-section {
+            margin-top: 2.5rem;
+        }
+
+        .modal-section:first-child {
+            margin-top: 0;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--pico-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Markdown content in modal */
+        .modal-body p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body ul, .modal-body ol {
+            font-size: 0.85rem;
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.25rem;
+        }
+
+        .modal-body strong {
+            font-weight: 600;
+        }
+
+        .deps-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .dep-chip {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 1rem;
+            background: var(--pico-muted-border-color);
+            color: var(--pico-color);
+            opacity: 0.85;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .dep-chip:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .dep-chip.prereq {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--epica);
+        }
+        .dep-chip.potencia {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--quick-win);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .kpi-item {
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.08);
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            border-left: 3px solid var(--proyecto);
+        }
+
+        .kpi-item strong {
+            display: block;
+            margin-bottom: 0.2rem;
+            font-size: 0.8rem;
+            color: var(--pico-color);
+        }
+
+        .kpi-item small {
+            color: var(--pico-muted-color);
+        }
+
+        .risk-table {
+            font-size: 0.8rem;
+        }
+
+        .risk-table th,
+        .risk-table td {
+            padding: 0.5rem 0.5rem;
+        }
+
+        /* Criterio de éxito */
+        .criterio-group {
+            margin-bottom: 1rem;
+        }
+
+        .criterio-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .criterio-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--pico-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.4rem;
+        }
+
+        .criterio-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .criterio-list li {
+            font-size: 0.8rem;
+            padding: 0.3rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .criterio-list li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            color: var(--pico-muted-color);
+        }
+
+        /* Primeros pasos */
+        #modal-pasos {
+            padding-left: 1.25rem;
+            margin: 0;
+        }
+
+        #modal-pasos li {
+            font-size: 0.8rem;
+            margin-bottom: 0.4rem;
+            padding-left: 0.25rem;
+        }
+
+        /* Recursos y habilitantes */
+        .recursos-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .recursos-subtitle {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--pico-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 0.4rem;
+            margin-top: 0.75rem;
+        }
+
+        .recursos-subtitle:first-child {
+            margin-top: 0;
+        }
+
+        .recursos-list {
+            list-style: disc;
+            padding-left: 1.25rem;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .recursos-list li {
+            margin-bottom: 0.25rem;
+        }
+
+        .habilitante-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--pico-muted-border-color);
+        }
+
+        .habilitante-item:last-child {
+            border-bottom: none;
+        }
+
+        .habilitante-estado {
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .habilitante-nombre {
+            font-weight: 500;
+        }
+
+        .habilitante-desc {
+            color: var(--pico-muted-color);
+            font-size: 0.75rem;
+        }
+
+        /* Dependencias con íconos */
+        .dep-chip svg {
+            width: 10px;
+            height: 10px;
+            margin-right: 2px;
+            vertical-align: -1px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--pico-muted-color);
+        }
+
+        @media (max-width: 768px) {
+            .filters {
+                flex-direction: column;
+            }
+            .filters select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Oportunidades de IA</h1>
+            <p>Diagnóstico interno Brinca - <span id="fecha-generacion"></span></p>
+        </header>
+
+        <!-- Stats -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <h2 id="total-count">0</h2>
+                <small>Oportunidades</small>
+            </div>
+            <div class="stat-card">
+                <h2 id="quickwin-count">0</h2>
+                <small>Quick Wins</small>
+            </div>
+            <div class="stat-card">
+                <h2 id="proyecto-count">0</h2>
+                <small>Proyectos</small>
+            </div>
+            <div class="stat-card">
+                <h2 id="epica-count">0</h2>
+                <small>Épicas</small>
+            </div>
+            <div class="stat-card">
+                <h2 id="indice-ia2">1.8</h2>
+                <small>Índice IA² actual</small>
+            </div>
+        </section>
+
+        <!-- Filters -->
+        <section class="filters">
+            <div class="filter-badges">
+                <span class="filter-badge quick-win" data-tipo="Quick Win">Quick Win</span>
+                <span class="filter-badge proyecto" data-tipo="Proyecto">Proyecto</span>
+                <span class="filter-badge epica" data-tipo="Épica">Épica</span>
+            </div>
+            <select id="filter-area">
+                <option value="">Todas las áreas</option>
+            </select>
+            <select id="filter-esfuerzo">
+                <option value="">Todo esfuerzo</option>
+                <option value="Bajo">Bajo</option>
+                <option value="Medio">Medio</option>
+                <option value="Alto">Alto</option>
+            </select>
+            <input type="search" id="search" placeholder="Buscar...">
+        </section>
+
+        <!-- Cards Grid -->
+        <section id="cards-container" class="cards-grid">
+            <!-- Cards generadas por JS -->
+        </section>
+
+        <p id="no-results" class="no-results hidden">No se encontraron oportunidades con esos filtros.</p>
+    </main>
+
+    <!-- Modal de detalle -->
+    <dialog id="modal">
+        <article>
+            <header>
+                <button aria-label="Cerrar" rel="prev" onclick="closeModal()"></button>
+                <div class="card-header">
+                    <span id="modal-tipo" class="tipo-badge"></span>
+                    <span id="modal-id" class="card-number"></span>
+                </div>
+                <h2 id="modal-nombre"></h2>
+                <div class="card-meta">
+                    <span id="modal-area" class="meta-item" data-tooltip="Área o dominio">
+                        <i data-lucide="building-2"></i><span id="modal-area-text"></span>
+                    </span>
+                    <span id="modal-plazo" class="meta-item" data-tooltip="Plazo estimado">
+                        <i data-lucide="clock"></i><span id="modal-plazo-text"></span>
+                    </span>
+                    <span id="modal-esfuerzo" class="meta-item" data-tooltip="Nivel de esfuerzo">
+                        <i data-lucide="zap"></i><span id="modal-esfuerzo-text"></span>
+                    </span>
+                </div>
+            </header>
+
+            <div class="modal-body">
+                <div class="modal-section">
+                    <div class="section-title">Problema</div>
+                    <div id="modal-problema"></div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="section-title">Solución</div>
+                    <div id="modal-solucion"></div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="section-title">Impacto</div>
+                    <ul id="modal-impacto"></ul>
+                </div>
+
+                <div id="modal-deps-section" class="modal-section">
+                    <div class="section-title">Dependencias</div>
+                    <div id="modal-deps" class="deps-list"></div>
+                </div>
+
+                <div id="modal-criterio-section" class="modal-section">
+                    <div class="section-title">Criterio de Éxito</div>
+                    <div id="modal-criterio"></div>
+                </div>
+
+                <div id="modal-valor-section" class="modal-section">
+                    <div class="section-title">Estimación de Valor</div>
+                    <div id="modal-valor"></div>
+                </div>
+
+                <div id="modal-pasos-section" class="modal-section">
+                    <div class="section-title">Primeros Pasos</div>
+                    <ol id="modal-pasos"></ol>
+                </div>
+
+                <div id="modal-recursos-section" class="modal-section">
+                    <div class="section-title">Recursos y Habilitantes</div>
+                    <div id="modal-recursos"></div>
+                </div>
+
+                <div id="modal-ia2-section" class="modal-section">
+                    <div class="section-title">Conexión con Índice IA²</div>
+                    <table class="risk-table" id="modal-ia2-table">
+                        <thead>
+                            <tr>
+                                <th>Dimensión</th>
+                                <th>Subdimensión</th>
+                                <th>Score</th>
+                                <th>Impacto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-ia2"></tbody>
+                    </table>
+                    <div id="modal-ia2-justificacion"></div>
+                </div>
+
+                <div id="modal-kpis-section" class="modal-section">
+                    <div class="section-title">KPIs</div>
+                    <div id="modal-kpis" class="kpi-grid"></div>
+                </div>
+
+                <div id="modal-riesgos-section" class="modal-section">
+                    <div class="section-title">Riesgos</div>
+                    <table class="risk-table">
+                        <thead>
+                            <tr>
+                                <th>Riesgo</th>
+                                <th>Mitigación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-riesgos"></tbody>
+                    </table>
+                </div>
+
+                <div class="modal-section">
+                    <div class="section-title">Owner</div>
+                    <p><strong>Responsable:</strong> <span id="modal-responsable"></span><br>
+                       <strong>Sponsor:</strong> <span id="modal-sponsor"></span></p>
+                </div>
+            </div>
+
+            <footer>
+                <button onclick="closeModal()">Cerrar</button>
+            </footer>
+        </article>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="data.js"></script>
+    <script>
+        // Estado
+        let oportunidades = [];
+        let tiposActivos = new Set(['Quick Win', 'Proyecto', 'Épica']);
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof DATA !== 'undefined') {
+                oportunidades = DATA.oportunidades;
+                initApp();
+            } else {
+                document.getElementById('cards-container').innerHTML =
+                    '<p>Error: No se encontró data.js. Ejecuta el script de parsing primero.</p>';
+            }
+        });
+
+        function initApp() {
+            // Metadata
+            document.getElementById('fecha-generacion').textContent = DATA.metadata.generado;
+            document.getElementById('total-count').textContent = DATA.metadata.total;
+            document.getElementById('indice-ia2').textContent = DATA.metadata.indice_ia2_general;
+
+            // Contar por tipo
+            const counts = { 'Quick Win': 0, 'Proyecto': 0, 'Épica': 0 };
+            const areas = new Set();
+
+            oportunidades.forEach(o => {
+                if (o.tipo in counts) counts[o.tipo]++;
+                if (o.area) areas.add(o.area);
+            });
+
+            document.getElementById('quickwin-count').textContent = counts['Quick Win'];
+            document.getElementById('proyecto-count').textContent = counts['Proyecto'];
+            document.getElementById('epica-count').textContent = counts['Épica'];
+
+            // Poblar filtro de áreas
+            const areaSelect = document.getElementById('filter-area');
+            [...areas].sort().forEach(area => {
+                const opt = document.createElement('option');
+                opt.value = area;
+                opt.textContent = area;
+                areaSelect.appendChild(opt);
+            });
+
+            // Listeners de filtros
+            document.querySelectorAll('.filter-badge').forEach(badge => {
+                badge.addEventListener('click', () => toggleTipoFilter(badge));
+            });
+            document.getElementById('filter-area').addEventListener('change', renderCards);
+            document.getElementById('filter-esfuerzo').addEventListener('change', renderCards);
+            document.getElementById('search').addEventListener('input', renderCards);
+
+            renderCards();
+        }
+
+        function toggleTipoFilter(badge) {
+            const tipo = badge.dataset.tipo;
+            if (tiposActivos.has(tipo)) {
+                tiposActivos.delete(tipo);
+                badge.classList.add('inactive');
+            } else {
+                tiposActivos.add(tipo);
+                badge.classList.remove('inactive');
+            }
+            renderCards();
+        }
+
+        function getTipoClass(tipo) {
+            if (tipo === 'Quick Win') return 'quick-win';
+            if (tipo === 'Proyecto') return 'proyecto';
+            if (tipo === 'Épica') return 'epica';
+            return '';
+        }
+
+        function renderCards() {
+            const areaFilter = document.getElementById('filter-area').value;
+            const esfuerzoFilter = document.getElementById('filter-esfuerzo').value;
+            const searchTerm = document.getElementById('search').value.toLowerCase();
+
+            const filtered = oportunidades.filter(o => {
+                if (!tiposActivos.has(o.tipo)) return false;
+                if (areaFilter && o.area !== areaFilter) return false;
+                if (esfuerzoFilter && o.esfuerzo !== esfuerzoFilter) return false;
+                if (searchTerm && !o.nombre.toLowerCase().includes(searchTerm) &&
+                    !o.problema?.toLowerCase().includes(searchTerm)) return false;
+                return true;
+            });
+
+            const container = document.getElementById('cards-container');
+            const noResults = document.getElementById('no-results');
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            container.innerHTML = filtered.map(o => createCard(o)).join('');
+
+            // Añadir listeners
+            container.querySelectorAll('.oportunidad-card').forEach(card => {
+                card.addEventListener('click', () => openModal(card.dataset.id));
+            });
+
+            // Renderizar íconos Lucide
+            lucide.createIcons();
+        }
+
+        function createCard(o) {
+            const tipoClass = getTipoClass(o.tipo);
+            const ia2Preview = (o.conexion_ia2?.conexiones || []).slice(0, 2);
+
+            return `
+                <article class="oportunidad-card ${tipoClass}" data-id="${o.id}">
+                    <div class="card-header">
+                        <span class="tipo-badge ${tipoClass}">${o.tipo}</span>
+                        <span class="card-number">${o.id}</span>
+                    </div>
+                    <h4>${o.nombre}</h4>
+                    <div class="card-meta">
+                        <span class="meta-item" data-tooltip="Área o dominio">
+                            <i data-lucide="building-2"></i>${o.area || 'Sin área'}
+                        </span>
+                        ${o.plazo ? `<span class="meta-item" data-tooltip="Plazo estimado">
+                            <i data-lucide="clock"></i>${o.plazo}
+                        </span>` : ''}
+                        ${o.esfuerzo ? `<span class="meta-item" data-tooltip="Nivel de esfuerzo">
+                            <i data-lucide="zap"></i>${o.esfuerzo}
+                        </span>` : ''}
+                    </div>
+                    ${ia2Preview.length > 0 ? `
+                        <div class="ia2-preview">
+                            ${ia2Preview.map(c => `
+                                <div class="ia2-item">
+                                    <span>${c.subdimension}</span>
+                                    <span>${c.impacto}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </article>
+            `;
+        }
+
+        function openModal(id) {
+            const o = oportunidades.find(x => x.id === id);
+            if (!o) return;
+
+            const modal = document.getElementById('modal');
+            const tipoClass = getTipoClass(o.tipo);
+
+            // Header
+            document.getElementById('modal-tipo').textContent = o.tipo;
+            document.getElementById('modal-tipo').className = `tipo-badge ${tipoClass}`;
+            document.getElementById('modal-id').textContent = o.id;
+            document.getElementById('modal-nombre').textContent = o.nombre;
+
+            // Meta con íconos
+            document.getElementById('modal-area-text').textContent = o.area || 'Sin área';
+            document.getElementById('modal-esfuerzo-text').textContent = o.esfuerzo || '';
+            document.getElementById('modal-plazo-text').textContent = o.plazo || '';
+
+            // Mostrar/ocultar campos vacíos
+            document.getElementById('modal-esfuerzo').style.display = o.esfuerzo ? '' : 'none';
+            document.getElementById('modal-plazo').style.display = o.plazo ? '' : 'none';
+
+            // Contenido (renderizado como Markdown)
+            document.getElementById('modal-problema').innerHTML = marked.parse(o.problema || '');
+            document.getElementById('modal-solucion').innerHTML = marked.parse(o.solucion || '');
+
+            // Impacto
+            const impactoList = document.getElementById('modal-impacto');
+            impactoList.innerHTML = (o.impacto || []).map(i => `<li>${i}</li>`).join('');
+
+            // Dependencias (con íconos para tipo)
+            const depsSection = document.getElementById('modal-deps-section');
+            const depsContainer = document.getElementById('modal-deps');
+            const deps = o.dependencias || { prerrequisitos: [], potencia: [] };
+            const allDeps = [
+                ...deps.prerrequisitos.map(d => ({ ...d, type: 'prereq' })),
+                ...deps.potencia.map(d => ({ ...d, type: 'potencia' }))
+            ];
+
+            if (allDeps.length > 0) {
+                depsSection.classList.remove('hidden');
+                depsContainer.innerHTML = allDeps.map(d => {
+                    const icon = d.type === 'prereq'
+                        ? '<i data-lucide="lock" title="Prerrequisito"></i>'
+                        : '<i data-lucide="sparkles" title="Potencia"></i>';
+                    const tooltip = d.type === 'prereq' ? 'Prerrequisito' : 'Potencia';
+                    return `<span class="dep-chip ${d.type}" data-id="${d.id}" title="${tooltip}: ${d.nombre}">${icon}#${d.id} ${d.nombre}</span>`;
+                }).join('');
+
+                // Hacer chips clickeables
+                depsContainer.querySelectorAll('.dep-chip').forEach(chip => {
+                    chip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openModal(chip.dataset.id);
+                    });
+                });
+            } else {
+                depsSection.classList.add('hidden');
+            }
+
+            // Criterio de Éxito
+            const criterioSection = document.getElementById('modal-criterio-section');
+            const criterio = o.criterio_exito || { done: [], success: [] };
+            if (criterio.done.length > 0 || criterio.success.length > 0) {
+                criterioSection.classList.remove('hidden');
+                let html = '';
+                if (criterio.done.length > 0) {
+                    html += `<div class="criterio-group">
+                        <div class="criterio-label">Definition of Done</div>
+                        <ul class="criterio-list">${criterio.done.map(c => `<li>${c}</li>`).join('')}</ul>
+                    </div>`;
+                }
+                if (criterio.success.length > 0) {
+                    html += `<div class="criterio-group">
+                        <div class="criterio-label">Definition of Success</div>
+                        <ul class="criterio-list">${criterio.success.map(c => `<li>${c}</li>`).join('')}</ul>
+                    </div>`;
+                }
+                document.getElementById('modal-criterio').innerHTML = html;
+            } else {
+                criterioSection.classList.add('hidden');
+            }
+
+            // Estimación de Valor
+            const valorSection = document.getElementById('modal-valor-section');
+            const valor = o.valor || '';
+            if (valor.trim()) {
+                valorSection.classList.remove('hidden');
+                document.getElementById('modal-valor').innerHTML = marked.parse(valor);
+            } else {
+                valorSection.classList.add('hidden');
+            }
+
+            // Primeros Pasos
+            const pasosSection = document.getElementById('modal-pasos-section');
+            const pasos = o.primeros_pasos || [];
+            if (pasos.length > 0) {
+                pasosSection.classList.remove('hidden');
+                document.getElementById('modal-pasos').innerHTML = pasos.map(p => `<li>${p}</li>`).join('');
+            } else {
+                pasosSection.classList.add('hidden');
+            }
+
+            // Recursos y Habilitantes
+            const recursosSection = document.getElementById('modal-recursos-section');
+            const rh = o.recursos_habilitantes || { recursos: [], horas: [], habilitantes: [] };
+            if (rh.recursos.length > 0 || rh.habilitantes.length > 0) {
+                recursosSection.classList.remove('hidden');
+                let html = '';
+
+                if (rh.recursos.length > 0) {
+                    html += `<div class="recursos-subtitle">Recursos necesarios</div>
+                        <ul class="recursos-list">${rh.recursos.map(r => `<li>${r}</li>`).join('')}</ul>`;
+                }
+
+                if (rh.habilitantes.length > 0) {
+                    html += `<div class="recursos-subtitle">Habilitantes</div>
+                        <div class="habilitantes-list">
+                            ${rh.habilitantes.map(h => `
+                                <div class="habilitante-item">
+                                    <span class="habilitante-estado">${h.estado.split(' ')[0]}</span>
+                                    <div>
+                                        <span class="habilitante-nombre">${h.nombre}</span>
+                                        <div class="habilitante-desc">${h.descripcion}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>`;
+                }
+
+                document.getElementById('modal-recursos').innerHTML = html;
+            } else {
+                recursosSection.classList.add('hidden');
+            }
+
+            // IA²
+            const ia2Section = document.getElementById('modal-ia2-section');
+            const conexiones = o.conexion_ia2?.conexiones || [];
+            if (conexiones.length > 0) {
+                ia2Section.classList.remove('hidden');
+                document.getElementById('modal-ia2').innerHTML = conexiones.map(c => `
+                    <tr>
+                        <td>${c.dimension}</td>
+                        <td>${c.subdimension}</td>
+                        <td>${c.score_actual}</td>
+                        <td>${c.impacto}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('modal-ia2-justificacion').innerHTML =
+                    marked.parse(o.conexion_ia2?.justificacion || '');
+            } else {
+                ia2Section.classList.add('hidden');
+            }
+
+            // KPIs
+            const kpisSection = document.getElementById('modal-kpis-section');
+            const kpis = o.kpis || [];
+            if (kpis.length > 0) {
+                kpisSection.classList.remove('hidden');
+                document.getElementById('modal-kpis').innerHTML = kpis.map(k => `
+                    <div class="kpi-item">
+                        <strong>${k.nombre}</strong>
+                        ${k.baseline ? `<small>Baseline: ${k.baseline}</small><br>` : ''}
+                        ${k.target ? `<small>Target: ${k.target}</small>` : ''}
+                    </div>
+                `).join('');
+            } else {
+                kpisSection.classList.add('hidden');
+            }
+
+            // Riesgos
+            const riesgosSection = document.getElementById('modal-riesgos-section');
+            const riesgos = o.riesgos || [];
+            if (riesgos.length > 0) {
+                riesgosSection.classList.remove('hidden');
+                document.getElementById('modal-riesgos').innerHTML = riesgos.map(r => `
+                    <tr>
+                        <td>${r.riesgo}</td>
+                        <td>${r.mitigacion}</td>
+                    </tr>
+                `).join('');
+            } else {
+                riesgosSection.classList.add('hidden');
+            }
+
+            // Owner
+            document.getElementById('modal-responsable').textContent = o.owner?.responsable || 'Por definir';
+            document.getElementById('modal-sponsor').textContent = o.owner?.sponsor || 'Por definir';
+
+            modal.showModal();
+
+            // Renderizar íconos Lucide en el modal
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').close();
+        }
+
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
