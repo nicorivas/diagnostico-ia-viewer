@@ -527,6 +527,84 @@
             color: var(--pico-muted-color);
         }
 
+        /* Vista de dependencias */
+        .view-toggle {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--pico-muted-border-color);
+            border-radius: 0.5rem;
+            padding: 0.2rem;
+        }
+
+        .view-toggle button {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.4rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            color: var(--pico-muted-color);
+            margin: 0;
+        }
+
+        .view-toggle button.active {
+            background: var(--pico-card-background-color);
+            color: var(--pico-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .deps-container {
+            display: none;
+        }
+
+        .deps-container.active {
+            display: block;
+        }
+
+        .deps-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .deps-row-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--pico-muted-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .deps-row-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .deps-card {
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            background: var(--pico-card-background-color);
+            border-left: 3px solid var(--pico-muted-border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .deps-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .deps-card.quick-win { border-left-color: var(--quick-win); }
+        .deps-card.proyecto { border-left-color: var(--proyecto); }
+        .deps-card.epica { border-left-color: var(--epica); }
+
+        .deps-card-id {
+            font-weight: 600;
+            margin-right: 0.25rem;
+            opacity: 0.6;
+        }
+
         @media (max-width: 768px) {
             .filters {
                 flex-direction: column;
@@ -570,6 +648,10 @@
 
         <!-- Filters -->
         <section class="filters">
+            <div class="view-toggle">
+                <button class="active" data-view="cards">Cards</button>
+                <button data-view="deps">Dependencias</button>
+            </div>
             <div class="filter-badges">
                 <span class="filter-badge quick-win" data-tipo="Quick Win">Quick Win</span>
                 <span class="filter-badge proyecto" data-tipo="Proyecto">Proyecto</span>
@@ -590,6 +672,11 @@
         <!-- Cards Grid -->
         <section id="cards-container" class="cards-grid">
             <!-- Cards generadas por JS -->
+        </section>
+
+        <!-- Vista de Dependencias -->
+        <section id="deps-container" class="deps-container">
+            <!-- Generada por JS -->
         </section>
 
         <p id="no-results" class="no-results hidden">No se encontraron oportunidades con esos filtros.</p>
@@ -713,6 +800,7 @@
         // Estado
         let oportunidades = [];
         let tiposActivos = new Set(['Quick Win', 'Proyecto', 'Épica']);
+        let vistaActual = 'cards'; // 'cards' o 'deps'
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
@@ -760,6 +848,11 @@
             document.getElementById('filter-area').addEventListener('change', renderCards);
             document.getElementById('filter-esfuerzo').addEventListener('change', renderCards);
             document.getElementById('search').addEventListener('input', renderCards);
+
+            // Listener toggle de vista
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.addEventListener('click', () => toggleView(btn.dataset.view));
+            });
 
             renderCards();
         }
@@ -1047,6 +1140,88 @@
 
             // Renderizar íconos Lucide en el modal
             lucide.createIcons();
+        }
+
+        function toggleView(view) {
+            vistaActual = view;
+            // Actualizar botones
+            document.querySelectorAll('.view-toggle button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            // Mostrar/ocultar containers
+            const cardsContainer = document.getElementById('cards-container');
+            const depsContainer = document.getElementById('deps-container');
+            if (view === 'cards') {
+                cardsContainer.style.display = '';
+                depsContainer.classList.remove('active');
+            } else {
+                cardsContainer.style.display = 'none';
+                depsContainer.classList.add('active');
+                renderDepsView();
+            }
+        }
+
+        function calcularNiveles(ops) {
+            const niveles = {};
+            const porId = Object.fromEntries(ops.map(o => [o.id, o]));
+
+            function getNivel(id, visited = new Set()) {
+                if (niveles[id] !== undefined) return niveles[id];
+                if (visited.has(id)) return 0; // ciclo
+                visited.add(id);
+
+                const o = porId[id];
+                if (!o) return 0;
+                const prereqs = o.dependencias?.prerrequisitos || [];
+                if (prereqs.length === 0) {
+                    niveles[id] = 0;
+                    return 0;
+                }
+
+                const maxPrereq = Math.max(...prereqs.map(p => getNivel(p.id, new Set(visited))));
+                niveles[id] = maxPrereq + 1;
+                return niveles[id];
+            }
+
+            ops.forEach(o => getNivel(o.id));
+            return niveles;
+        }
+
+        function renderDepsView() {
+            const niveles = calcularNiveles(oportunidades);
+            const porNivel = {};
+
+            oportunidades.forEach(o => {
+                const nivel = niveles[o.id] || 0;
+                if (!porNivel[nivel]) porNivel[nivel] = [];
+                porNivel[nivel].push(o);
+            });
+
+            const nivelesOrdenados = Object.keys(porNivel).map(Number).sort((a, b) => a - b);
+            const container = document.getElementById('deps-container');
+
+            container.innerHTML = nivelesOrdenados.map(nivel => {
+                const ops = porNivel[nivel];
+                const label = nivel === 0 ? 'Nivel 0 - Habilitantes (sin prerrequisitos)' : `Nivel ${nivel}`;
+                return `
+                    <div class="deps-row">
+                        <div class="deps-row-label">${label}</div>
+                        <div class="deps-row-cards">
+                            ${ops.map(o => {
+                                const tipoClass = getTipoClass(o.tipo);
+                                return `<div class="deps-card ${tipoClass}" data-id="${o.id}">
+                                    <span class="deps-card-id">#${o.id}</span>${o.nombre}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Hacer cards clickeables
+            container.querySelectorAll('.deps-card').forEach(card => {
+                card.addEventListener('click', () => openModal(card.dataset.id));
+            });
         }
 
         function closeModal() {
